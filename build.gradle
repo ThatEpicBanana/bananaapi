@@ -23,6 +23,13 @@ dependencies {
     // You may need to force-disable transitiveness on them.
 }
 
+repositories {
+    jcenter()
+    maven {
+        url = "https://jitpack.io"
+    }
+}
+
 processResources {
     inputs.property "version", project.version
 
