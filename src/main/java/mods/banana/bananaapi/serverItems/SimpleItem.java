@@ -1,9 +1,7 @@
 package mods.banana.bananaapi.serverItems;
 
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -11,6 +9,7 @@ import net.minecraft.util.Identifier;
 
 public class SimpleItem extends ServerItem {
     public boolean preventDrop = false;
+    public boolean preventSteal = false;
 
     public SimpleItem(ItemConvertible parent, Identifier identifier) {
         this.parent = parent;
@@ -47,8 +46,15 @@ public class SimpleItem extends ServerItem {
         return this;
     }
 
+    public SimpleItem setStealPrevention(boolean preventSteal) {
+        this.preventSteal = preventSteal;
+        return this;
+    }
+
     @Override
     public ItemStack getItemStack(int count) {
+        CompoundTag tag = new CompoundTag();
+
         CompoundTag moduleTag = new CompoundTag();
         moduleTag.putString("type", identifier.getPath());
 
@@ -61,10 +67,40 @@ public class SimpleItem extends ServerItem {
     }
 
     @Override
+    public ItemStack convert(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        if(tag == null) tag = new CompoundTag();
+
+        CompoundTag moduleTag = new CompoundTag();
+        moduleTag.putString("type", identifier.getPath());
+
+        tag.put(identifier.getNamespace(), moduleTag);
+
+        stack.setTag(tag);
+
+        return stack;
+    }
+
+    @Override
+    public void setCustomTag(ItemStack stack, CompoundTag tag) {
+        CompoundTag newTag = stack.getTag();
+        if(newTag == null) newTag = new CompoundTag();
+
+        newTag.put(identifier.getNamespace(), tag);
+
+        stack.setTag(newTag);
+    }
+
+    @Override
     public boolean onItemEntitySpawn(ItemStack itemStack) { return preventDrop; }
 
     @Override
     public boolean onUse(ItemStack itemStack, ServerPlayerEntity player, int slot) {
         return true;
+    }
+
+    @Override
+    public boolean preventSteal() {
+        return preventSteal;
     }
 }

@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "economy2",
+  "id": "bananaapi",
   "version": "${version}",
-  "name": "Economy2",
-  "description": "Second version of my economy mod",
+  "name": "Banana API",
+  "description": "API for random stuff for my mods",
   "authors": [
     "ThatEpicBanana"
   ],
@@ -13,12 +13,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "mods.banana.economy2.Economy2",
       "mods.banana.bananaapi.BananaApi"
     ]
   },
   "mixins": [
-    "economy2.mixins.json",
     "bananaapi.mixins.json"
   ],
   "depends": {

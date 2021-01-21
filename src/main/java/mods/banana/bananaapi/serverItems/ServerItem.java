@@ -1,6 +1,5 @@
 package mods.banana.bananaapi.serverItems;
 
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
@@ -27,9 +26,14 @@ public abstract class ServerItem {
      */
     public ItemStack getItemStack() { return getItemStack(1); }
 
+    public abstract ItemStack convert(ItemStack stack);
+
     public Identifier getIdentifier() { return identifier; }
 
     public ItemConvertible getParent() { return parent; }
+
+    public CompoundTag getCustomTag(ItemStack stack) { return (CompoundTag) stack.getTag().get(identifier.getNamespace()); }
+    public abstract void setCustomTag(ItemStack stack, CompoundTag tag);
 
     /**
      * executes when item used
@@ -54,6 +58,10 @@ public abstract class ServerItem {
                 return tag.getCompound(identifier.getNamespace()).getString("type").equals(identifier.getPath());
             }
         }
+        return false;
+    }
+
+    public boolean preventSteal() {
         return false;
     }
 }
