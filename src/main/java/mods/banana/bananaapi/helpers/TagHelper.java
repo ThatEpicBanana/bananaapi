@@ -9,8 +9,10 @@ public class TagHelper {
     public static CompoundTag combine(CompoundTag tag1, CompoundTag tag2) {
         CompoundTag output = tag1.copy();
         for(String key : tag2.getKeys()) {
+            System.out.println(key);
             Tag tag = tag2.get(key);
-            if(tag instanceof CompoundTag) {
+            assert tag != null;
+            if(tag.getType() == 10) { // compound tag
 
                 // if output already contains key
                 if(output.contains(key)) {
@@ -19,12 +21,12 @@ public class TagHelper {
 
                 } else output.put(key, tag); // else just add the compound
 
-            } else if(tag instanceof ListTag) {
+            } else if(tag.getType() == 9) { // list tag
 
                 // if output already contains the tag
                 if(output.contains(key)) {
                     // get the previous list
-                    ListTag outputList = output.getList(key, tag.getType());
+                    ListTag outputList = output.getList(key, ((ListTag)tag).getElementType());
 
                     // iterate through each index of the previous list
                     for(Tag i : (ListTag)tag) {

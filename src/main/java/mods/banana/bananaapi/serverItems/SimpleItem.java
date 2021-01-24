@@ -53,7 +53,7 @@ public class SimpleItem extends ServerItem {
 
     @Override
     public ItemStack getItemStack(int count) {
-        CompoundTag tag = new CompoundTag();
+        CompoundTag tag = this.tag;
 
         CompoundTag moduleTag = new CompoundTag();
         moduleTag.putString("type", identifier.getPath());
