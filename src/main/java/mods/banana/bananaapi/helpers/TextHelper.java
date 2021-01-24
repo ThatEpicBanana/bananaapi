@@ -1,4 +1,4 @@
-package mods.banana.bananaapi;
+package mods.banana.bananaapi.helpers;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
