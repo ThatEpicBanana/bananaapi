@@ -1,5 +1,6 @@
 package mods.banana.bananaapi;
 
+import mods.banana.bananaapi.serverItems.ServerItemHandler;
 import mods.banana.bananaapi.serverItems.ServerItem;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -20,8 +21,8 @@ public class BananaApi implements ModInitializer {
         UseItemCallback.EVENT.register((player, world, hand) -> {
             if(world.isClient) return TypedActionResult.pass(ItemStack.EMPTY);
             ItemStack stack = player.getStackInHand(hand);
-            for(ServerItem item : ServerItem.items) {
-                if(item.sameIdentifierAs(stack)) {
+            for(ServerItem item : ServerItemHandler.getItems()) {
+                if(item.matches(stack)) {
                     if(item.onUse(stack, (ServerPlayerEntity) player, hand == Hand.MAIN_HAND ? player.inventory.selectedSlot : 40)) return TypedActionResult.success(player.getStackInHand(hand));
                 }
             }

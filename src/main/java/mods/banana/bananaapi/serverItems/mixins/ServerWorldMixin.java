@@ -1,5 +1,6 @@
 package mods.banana.bananaapi.serverItems.mixins;
 
+import mods.banana.bananaapi.serverItems.ServerItemHandler;
 import mods.banana.bananaapi.serverItems.ServerItem;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
@@ -15,9 +16,9 @@ public class ServerWorldMixin {
     @Inject(method = "spawnEntity", at = {@At("HEAD")}, cancellable = true)
     private void onSpawn(Entity entity, CallbackInfoReturnable<Boolean> cir) {
         if(entity instanceof ItemEntity) {
-            for(ServerItem serverItem : ServerItem.items) {
+            for(ServerItem serverItem : ServerItemHandler.getItems()) {
                 ItemStack stack = ((ItemEntity)entity).getStack();
-                if(serverItem.sameIdentifierAs(stack)) {
+                if(serverItem.matches(stack)) {
                     if(serverItem.onItemEntitySpawn(stack)) cir.setReturnValue(false);
                 }
             }

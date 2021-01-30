@@ -1,5 +1,6 @@
 package mods.banana.bananaapi.serverItems.mixins;
 
+import mods.banana.bananaapi.serverItems.ServerItemHandler;
 import mods.banana.bananaapi.serverItems.ServerItem;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -16,8 +17,8 @@ public class ScreenHandlerMixin {
         for(int i = 0; i < player.inventory.size(); i++) {
             ItemStack stack = player.inventory.getStack(i);
             if(!stack.isEmpty()) {
-                for(ServerItem item : ServerItem.items) {
-                    if(item.preventSteal() && item.sameIdentifierAs(stack)) {
+                for(ServerItem item : ServerItemHandler.getItems()) {
+                    if(item.matches(stack) && item.onTakenFromInventory(player, stack)) {
                         player.inventory.removeStack(i);
                     }
                 }
