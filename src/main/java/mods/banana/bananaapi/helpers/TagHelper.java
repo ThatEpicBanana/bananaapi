@@ -7,17 +7,23 @@ import org.lwjgl.system.CallbackI;
 
 public class TagHelper {
     public static CompoundTag combine(CompoundTag tag1, CompoundTag tag2) {
-        CompoundTag output = tag1.copy();
+        CompoundTag output;
+
+        if(tag1 == null) output = new CompoundTag();
+        else output = tag1.copy();
+
         for(String key : tag2.getKeys()) {
 //            System.out.println(key);
             Tag tag = tag2.get(key);
             assert tag != null;
+            tag = tag.copy();
+
             if(tag.getType() == 10) { // compound tag
 
                 // if output already contains key
                 if(output.contains(key)) {
                     // put the combined tags
-                    output.put(key, combine((CompoundTag) tag, output.getCompound(key)));
+                    output.put(key, combine(output.getCompound(key), (CompoundTag) tag));
 
                 } else output.put(key, tag); // else just add the compound
 

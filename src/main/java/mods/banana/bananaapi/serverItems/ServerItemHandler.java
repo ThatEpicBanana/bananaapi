@@ -3,6 +3,7 @@ package mods.banana.bananaapi.serverItems;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class ServerItemHandler {
     private static final List<ServerItem> items = new ArrayList<>();
 

@@ -16,7 +16,9 @@
     ]
   },
   "mixins": [
-    "serverItem.mixins.json"
+    "serverItem.mixins.json",
+    "itemsv2.mixins.json",
+    "gui.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.10.8",

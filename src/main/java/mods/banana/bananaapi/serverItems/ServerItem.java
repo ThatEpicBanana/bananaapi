@@ -1,5 +1,6 @@
 package mods.banana.bananaapi.serverItems;
 
+import mods.banana.bananaapi.helpers.ItemStackHelper;
 import mods.banana.bananaapi.helpers.TagHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemConvertible;
@@ -11,6 +12,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
+@Deprecated
 public class ServerItem {
     protected ItemConvertible parent;
     protected Identifier identifier;
@@ -82,27 +84,23 @@ public class ServerItem {
     public ItemStack getItemStack() { return getItemStack(1); }
 
     public ItemStack getItemStack(int count) {
-//        CompoundTag tag = this.tag;
-//
-//        CompoundTag moduleTag = new CompoundTag();
-//        moduleTag.putString("type", identifier.getPath());
-//
-//        tag.put(identifier.getNamespace(), moduleTag);
-
         ItemStack stack = new ItemStack(parent, count);
-        stack.setTag(this.tag);
+        stack.setTag(this.tag.copy());
 
         return stack;
     }
 
     public ItemStack convert(ItemStack stack) {
-//        CompoundTag tag = stack.getTag();
-//        if(tag == null) tag = new CompoundTag();
-//
-//        CompoundTag moduleTag = new CompoundTag();
-//        moduleTag.putString("type", identifier.getPath());
-//
-//        tag.put(identifier.getNamespace(), moduleTag);
+        convertItem(stack);
+        convertTag(stack);
+        return stack;
+    }
+
+    public ItemStack convertItem(ItemStack stack) {
+        return ItemStackHelper.setItem(stack, parent.asItem());
+    }
+
+    public ItemStack convertTag(ItemStack stack) {
         if(!stack.hasTag()) stack.setTag(new CompoundTag());
 
         stack.setTag(TagHelper.combine(stack.getTag(), this.tag));
@@ -162,6 +160,10 @@ public class ServerItem {
             }
         }
         return false;
+    }
+
+    public boolean itemMatches(ItemStack stack) {
+        return getParent().equals(stack.getItem());
     }
 
     public boolean onItemEntitySpawn(ItemStack itemStack) { return preventDrop; }
