@@ -2,13 +2,18 @@ package mods.banana.bananaapi.itemsv2;
 
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.Tag;
+import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class StackReader {
     private final ArrayList<Identifier> identifiers = new ArrayList<>();
@@ -71,6 +76,17 @@ public class StackReader {
         return getCustomValue(key, null);
     }
 
+    public boolean hasCustomValue(String key, Integer nbtType) {
+        for(CompoundTag tag : getCustomCompounds()) {
+            if(nbtType != null ? tag.contains(key, nbtType) : tag.contains(key)) return true;
+        }
+        return false;
+    }
+
+    public boolean hasCustomValue(String key) {
+        return hasCustomValue(key, null);
+    }
+
     public Tag getGeneralValue(String key, Integer nbtType) {
         CompoundTag tag = stack.getOrCreateTag();
         return tag.contains(key, nbtType) ? tag.get(key) : null;
@@ -79,6 +95,36 @@ public class StackReader {
     public Tag getGeneralValue(String key) {
         return stack.getOrCreateTag().get(key);
     }
+
+
+    public String getCustomString(String key) {
+        return hasCustomValue(key, NbtType.STRING)
+                ? getCustomValue(key, NbtType.STRING).asString()
+                : null;
+    }
+
+    public UUID getCustomUUID(String key) {
+        return hasCustomValue(key, NbtType.STRING)
+                ? UUID.fromString(getCustomValue(key, NbtType.STRING).asString())
+                : null;
+    }
+
+    public BlockPos getCustomPos(String key) {
+        return hasCustomValue(key, NbtType.COMPOUND)
+                ? NbtHelper.toBlockPos((CompoundTag) getCustomValue(key, NbtType.COMPOUND))
+                : null;
+    }
+
+    public Identifier getCustomIdentifier(String key) {
+        return hasCustomValue(key, NbtType.STRING)
+                ? new Identifier(getCustomValue(key, NbtType.STRING).asString())
+                : null;
+    }
+
+    public boolean getCustomBoolean(String key) {
+        return hasCustomValue(key, NbtType.BYTE) && getCustomValue(key, NbtType.BYTE) == ByteTag.ONE;
+    }
+
 
     public Text getName() {
         CompoundTag tag = stack.getOrCreateTag();
@@ -99,5 +145,12 @@ public class StackReader {
         }
 
         return out;
+    }
+
+    public HoverEvent toHoverEvent() {
+        return new HoverEvent(
+                HoverEvent.Action.SHOW_ITEM,
+                new HoverEvent.ItemStackContent(stack)
+        );
     }
 }

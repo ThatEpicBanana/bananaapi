@@ -4,16 +4,15 @@ import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class StackBuilder {
@@ -81,7 +80,7 @@ public class StackBuilder {
     public StackBuilder customValue(String key, Tag value) {
         if(id != null && !id.getNamespace().equals("")) {
             tag.getCompound(id.getNamespace()).put(key, value);
-        } else generalValue(key, value);
+        } else return generalValue(key, value);
         return this;
     }
 
@@ -90,6 +89,30 @@ public class StackBuilder {
         return this;
     }
 
+
+    public StackBuilder customString(String key, String string) {
+        return customValue(key, StringTag.of(string));
+    }
+
+    public StackBuilder customUUID(String key, String uuid) {
+        return customUUID(key, UUID.fromString(uuid));
+    }
+
+    public StackBuilder customUUID(String key, UUID uuid) {
+        return customValue(key, NbtHelper.fromUuid(uuid));
+    }
+
+    public StackBuilder customPos(String key, BlockPos pos) {
+        return customValue(key, NbtHelper.fromBlockPos(pos));
+    }
+
+    public StackBuilder customIdentifier(String key, Identifier identifier) {
+        return customValue(key, StringTag.of(identifier.toString()));
+    }
+
+    public StackBuilder customBoolean(String key, boolean bool) {
+        return customValue(key, ByteTag.of(bool));
+    }
 
 
     private CompoundTag getDisplay() {
@@ -123,6 +146,14 @@ public class StackBuilder {
                 .collect(Collectors.toList());
     }
 
+    public StackBuilder setLore(String string) {
+        return setLore(new LiteralText(string));
+    }
+
+    public StackBuilder setLore(Text text) {
+        return setLore(List.of(text));
+    }
+
     public StackBuilder setLore(ListTag tag) {
         getDisplay().put("Lore", tag);
         return this;
@@ -138,11 +169,30 @@ public class StackBuilder {
         return setLore(tag);
     }
 
+    public StackBuilder addLore(String string) {
+        return addLore(new LiteralText(string));
+    }
+
+    public StackBuilder addLore(Text text) {
+        ArrayList<Text> newLore = new ArrayList<>(getLore());
+        newLore.add(text);
+        return setLore(newLore);
+    }
+
+    public StackBuilder addLore(String text, int i) {
+        return addLore(new LiteralText(text), i);
+    }
+
+    public StackBuilder addLore(Text text, int i) {
+        ArrayList<Text> newLore = new ArrayList<>(getLore());
+        newLore.add(i, text);
+        return setLore(newLore);
+    }
+
     public StackBuilder addLore(List<Text> texts, int i) {
         ArrayList<Text> newLore = new ArrayList<>(getLore());
         newLore.addAll(i, texts);
-        setLore(newLore);
-        return this;
+        return setLore(newLore);
     }
 
 
