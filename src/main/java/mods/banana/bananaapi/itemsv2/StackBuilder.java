@@ -1,6 +1,11 @@
 package mods.banana.bananaapi.itemsv2;
 
+import com.google.gson.*;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import mods.banana.bananaapi.helpers.TextHelper;
 import net.fabricmc.fabric.api.util.NbtType;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -8,14 +13,17 @@ import net.minecraft.nbt.*;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class StackBuilder {
+public class StackBuilder implements Cloneable {
     private Item item;
     private CompoundTag tag;
     private int count = 1;
@@ -169,8 +177,31 @@ public class StackBuilder {
         return setLore(tag);
     }
 
+    public StackBuilder replaceLore(int i, Text text) {
+        ListTag tag = getLoreNbt();
+        tag.setTag(i, StringTag.of(Text.Serializer.toJson(text)));
+        return setLore(tag);
+    }
+
+    public StackBuilder replaceLore(int i, List<Text> texts) {
+        ListTag tag = getLoreNbt();
+
+        // set all previous lines
+        for(int j = 0; j < Math.min(tag.size(), texts.size()); j++) {
+            tag.setTag(i + j, TextHelper.toTag(texts.get(j)));
+        }
+
+        // add all new lines
+        for(int j = Math.min(tag.size(), texts.size()); j < texts.size(); j++) {
+            tag.add(TextHelper.toTag(texts.get(j)));
+        }
+
+        // set lore
+        return setLore(tag);
+    }
+
     public StackBuilder addLore(String string) {
-        return addLore(new LiteralText(string));
+        return addLore(new LiteralText(string).setStyle(TextHelper.TRUE_RESET));
     }
 
     public StackBuilder addLore(Text text) {
@@ -180,7 +211,7 @@ public class StackBuilder {
     }
 
     public StackBuilder addLore(String text, int i) {
-        return addLore(new LiteralText(text), i);
+        return addLore(new LiteralText(text).setStyle(TextHelper.TRUE_RESET), i);
     }
 
     public StackBuilder addLore(Text text, int i) {
@@ -199,5 +230,106 @@ public class StackBuilder {
     public StackBuilder customModelData(int i) {
         tag.putInt("CustomModelData", i);
         return this;
+    }
+
+
+    public StackBuilder enchant(Enchantment enchantment, int level) {
+        ItemStack stack = build();
+        stack.addEnchantment(enchantment, level);
+        this.tag = stack.getTag();
+        return this;
+    }
+
+    public StackBuilder clone() {
+        try {
+            return (StackBuilder) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private Identifier getId() { return id; }
+    private CompoundTag getTag() { return tag; }
+    private int getCount() { return count; }
+    private Item getItem() { return item; }
+
+    public static class Serializer implements JsonSerializer<StackBuilder>, JsonDeserializer<StackBuilder> {
+        private static final Gson GSON = new GsonBuilder()
+                .registerTypeAdapter(StackBuilder.class, new StackBuilder.Serializer())
+                .create();
+
+        @Override
+        public StackBuilder deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject object = json.getAsJsonObject();
+
+            StackBuilder builder = new StackBuilder();
+
+            if(object.has("item")) {
+                builder.item(Registry.ITEM.get(new Identifier(object.get("item").getAsString())));
+            }
+
+            if(object.has("tag")) {
+                try {
+                    builder.tag(StringNbtReader.parse(object.get("tag").getAsString()));
+                } catch (CommandSyntaxException e) {
+                    throw new JsonParseException(e);
+                }
+            }
+
+            if(object.has("count")) {
+                builder.count(object.get("count").getAsInt());
+            }
+
+            if(object.has("id")) {
+                builder.id(new Identifier(object.get("id").getAsString()));
+            }
+
+            if(object.has("name")) {
+                builder.name(Text.Serializer.fromJson(object.get("name")));
+            }
+
+            if(object.has("customModelData")) {
+                builder.customModelData(object.get("customModelData").getAsInt());
+            }
+
+            if(object.has("lore")) {
+                if(object.get("lore").isJsonPrimitive()) {
+                    builder.addLore(object.get("lore").getAsString());
+
+                } else if(object.get("lore").isJsonArray()) {
+                    JsonArray loreJson = object.get("lore").getAsJsonArray();
+                    ArrayList<Text> lore = new ArrayList<>();
+
+                    for(JsonElement element : loreJson) {
+                        lore.add(Text.Serializer.fromJson(element));
+                    }
+
+                    builder.setLore(lore);
+                }
+            }
+
+            return builder;
+        }
+
+        @Override
+        public JsonElement serialize(StackBuilder src, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject object = new JsonObject();
+
+            if(src.getId() != null) object.addProperty("id", src.getId().toString());
+            if(src.getTag() != null) object.addProperty("tag", src.getTag().toString());
+            if(src.getCount() != 1) object.addProperty("count", src.getCount());
+            if(src.getItem() != null) object.addProperty("item", Registry.ITEM.getId(src.getItem()).toString());
+
+            return object;
+        }
+
+        public static StackBuilder fromJson(JsonElement element) {
+            return GSON.fromJson(element, StackBuilder.class);
+        }
+
+        public static JsonElement toJson(StackBuilder object) {
+            return GSON.toJsonTree(object);
+        }
     }
 }

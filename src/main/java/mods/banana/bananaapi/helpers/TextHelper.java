@@ -5,10 +5,7 @@ import com.google.gson.GsonBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
+import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 
 public class TextHelper {
@@ -30,5 +27,17 @@ public class TextHelper {
         displayTag.put("Lore", loreTag);
 
         return displayTag;
+    }
+
+    public static StringTag toTag(Text text) {
+        return StringTag.of(Text.Serializer.toJson(text));
+    }
+
+    public static MutableText literalText(String string) {
+        return new LiteralText(string).setStyle(TRUE_RESET);
+    }
+
+    public static MutableText t(String string) {
+        return literalText(string);
     }
 }
